@@ -4,12 +4,20 @@ from rest_framework import viewsets, permissions
 from .models import User, Event, Participant, Message
 from .serializers import UserSerializer, EventSerializer, ParticipantSerializer, MessageSerializer
 from datetime import timedelta
-
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.viewsets import ModelViewSet
+from .models import User
+from .serializers import UserSerializer
+from rest_framework.permissions import AllowAny, IsAuthenticated
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [permissions.IsAuthenticated]
+
+    def get_permissions(self):
+        if self.action == 'create':  # Kayıt işlemi
+            return [AllowAny()]
+        return [IsAuthenticated()]  # Diğer işlemler için yetkilendirme
 
 class EventViewSet(viewsets.ModelViewSet):
     queryset = Event.objects.all()

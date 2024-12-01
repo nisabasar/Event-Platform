@@ -1,180 +1,153 @@
 <template>
-  <div class="flex items-center justify-center h-screen bg-gray-900">
-    <div class="w-96 bg-gray-800 p-6 rounded-lg shadow-lg">
-      <h2 class="text-2xl text-center text-white font-bold mb-6">Kayıt Ol</h2>
-      <form @submit.prevent="handleRegister">
-        <div class="mb-4">
-          <label for="username" class="block text-sm text-gray-400 mb-2"
-            >Kullanıcı Adı</label
-          >
+  <div class="min-h-screen flex items-center justify-center">
+    <div class="w-full max-w-md p-8 bg-gray-800 rounded-lg shadow-lg">
+      <h2 class="text-2xl font-bold text-center mb-6">Kayıt Ol</h2>
+      <form @submit.prevent="register" class="space-y-4">
+        <!-- İsim -->
+        <div>
+          <label class="block mb-1">İsim</label>
           <input
-            v-model="user.username"
+            v-model="form.firstName"
             type="text"
-            id="username"
-            class="w-full px-3 py-2 bg-gray-700 text-white rounded focus:outline-none"
+            class="w-full p-3 rounded bg-gray-700 border border-gray-600 focus:ring-blue-500 focus:border-blue-500"
             required
           />
         </div>
-        <div class="mb-4">
-          <label for="password" class="block text-sm text-gray-400 mb-2"
-            >Şifre</label
-          >
+        <!-- Soyisim -->
+        <div>
+          <label class="block mb-1">Soyisim</label>
           <input
-            v-model="user.password"
-            type="password"
-            id="password"
-            class="w-full px-3 py-2 bg-gray-700 text-white rounded focus:outline-none"
-            required
-          />
-        </div>
-        <div class="mb-4">
-          <label for="firstName" class="block text-sm text-gray-400 mb-2"
-            >Ad</label
-          >
-          <input
-            v-model="user.firstName"
+            v-model="form.lastName"
             type="text"
-            id="firstName"
-            class="w-full px-3 py-2 bg-gray-700 text-white rounded focus:outline-none"
+            class="w-full p-3 rounded bg-gray-700 border border-gray-600 focus:ring-blue-500 focus:border-blue-500"
             required
           />
         </div>
-        <div class="mb-4">
-          <label for="lastName" class="block text-sm text-gray-400 mb-2"
-            >Soyad</label
-          >
+        <!-- Kullanıcı Adı -->
+        <div>
+          <label class="block mb-1">Kullanıcı Adı</label>
           <input
-            v-model="user.lastName"
+            v-model="form.username"
             type="text"
-            id="lastName"
-            class="w-full px-3 py-2 bg-gray-700 text-white rounded focus:outline-none"
+            class="w-full p-3 rounded bg-gray-700 border border-gray-600 focus:ring-blue-500 focus:border-blue-500"
             required
           />
         </div>
-        <div class="mb-4">
-          <label for="birthDate" class="block text-sm text-gray-400 mb-2"
-            >Doğum Tarihi</label
-          >
+        <!-- E-posta -->
+        <div>
+          <label class="block mb-1">E-posta</label>
           <input
-            v-model="user.birthDate"
-            type="date"
-            id="birthDate"
-            class="w-full px-3 py-2 bg-gray-700 text-white rounded focus:outline-none"
-            required
-          />
-        </div>
-        <div class="mb-4">
-          <label for="gender" class="block text-sm text-gray-400 mb-2"
-            >Cinsiyet</label
-          >
-          <select
-            v-model="user.gender"
-            id="gender"
-            class="w-full px-3 py-2 bg-gray-700 text-white rounded focus:outline-none"
-          >
-            <option value="Erkek">Erkek</option>
-            <option value="Kadın">Kadın</option>
-            <option value="Diğer">Diğer</option>
-          </select>
-        </div>
-        <div class="mb-4">
-          <label for="email" class="block text-sm text-gray-400 mb-2"
-            >E-posta Adresi</label
-          >
-          <input
-            v-model="user.email"
+            v-model="form.email"
             type="email"
-            id="email"
-            class="w-full px-3 py-2 bg-gray-700 text-white rounded focus:outline-none"
+            class="w-full p-3 rounded bg-gray-700 border border-gray-600 focus:ring-blue-500 focus:border-blue-500"
             required
           />
         </div>
-        <div class="mb-4">
-          <label for="phone" class="block text-sm text-gray-400 mb-2"
-            >Telefon Numarası</label
-          >
+        <!-- Şifre -->
+        <div>
+          <label class="block mb-1">Şifre</label>
           <input
-            v-model="user.phone"
-            type="tel"
-            id="phone"
-            class="w-full px-3 py-2 bg-gray-700 text-white rounded focus:outline-none"
+            v-model="form.password"
+            type="password"
+            class="w-full p-3 rounded bg-gray-700 border border-gray-600 focus:ring-blue-500 focus:border-blue-500"
+            required
           />
         </div>
-        <div class="mb-4">
-          <label for="interests" class="block text-sm text-gray-400 mb-2"
-            >İlgi Alanları</label
-          >
-          <textarea
-            v-model="user.interests"
-            id="interests"
-            class="w-full px-3 py-2 bg-gray-700 text-white rounded focus:outline-none"
-          ></textarea>
-        </div>
-        <div class="mb-4">
-          <label for="profilePicture" class="block text-sm text-gray-400 mb-2"
-            >Profil Fotoğrafı</label
-          >
+        <!-- Şifre (Tekrar) -->
+        <div>
+          <label class="block mb-1">Şifre (Tekrar)</label>
           <input
-            type="file"
-            id="profilePicture"
-            @change="handleFileUpload"
-            class="w-full px-3 py-2 bg-gray-700 text-white rounded focus:outline-none"
+            v-model="form.passwordConfirm"
+            type="password"
+            class="w-full p-3 rounded bg-gray-700 border border-gray-600 focus:ring-blue-500 focus:border-blue-500"
+            required
           />
         </div>
+        <!-- Kayıt Ol Butonu -->
         <button
           type="submit"
-          class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded"
+          class="w-full py-3 bg-blue-600 hover:bg-blue-700 rounded text-white font-bold"
         >
           Kayıt Ol
         </button>
-
-        <button
-          type="button"
-          @click="handleCancel"
-          class="w-full bg-gray-600 hover:bg-gray-700 text-white py-2 rounded mt-4"
-        >
-          İptal
-        </button>
       </form>
+      <!-- Hata Mesajı -->
+      <p v-if="errorMessage" class="mt-4 text-red-500 text-sm">
+        {{ errorMessage }}
+      </p>
+      <!-- Giriş Sayfasına Dön Bağlantısı -->
+      <div class="mt-6 text-center">
+        <router-link to="/login" class="text-blue-400 hover:underline">
+          Giriş sayfasına dön
+        </router-link>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
+import api from "@/services/api";
+
 export default {
   data() {
     return {
-      user: {
-        username: "",
-        password: "",
+      form: {
         firstName: "",
         lastName: "",
-        birthDate: "",
-        gender: "Erkek",
+        username: "",
         email: "",
-        phone: "",
-        interests: "",
-        profilePicture: null,
+        password: "",
+        passwordConfirm: "",
       },
+      errorMessage: "",
     };
   },
   methods: {
-    handleRegister() {
-      console.log("Kayıt bilgileri:", this.user);
-      // Burada API çağrısı ya da veri kaydı yapılabilir
-      alert("Kayıt başarıyla tamamlandı!");
-      this.$router.push("/login");
-    },
-    handleCancel() {
-      this.$router.push("/"); // İptal butonuna basıldığında /home'a yönlendirir
-    },
-    handleFileUpload(event) {
-      this.user.profilePicture = event.target.files[0];
+    async register() {
+      // Şifre ve şifre tekrarını kontrol edin
+      if (this.form.password !== this.form.passwordConfirm) {
+        this.errorMessage = "Şifreler uyuşmuyor.";
+        return;
+      }
+
+      try {
+        // API'ye kullanıcı oluşturma isteği gönder
+        await api.post("users/", {
+          username: this.form.username,
+          email: this.form.email,
+          password: this.form.password,
+          first_name: this.form.firstName,
+          last_name: this.form.lastName,
+        });
+
+        // Başarılı işlem sonrası giriş sayfasına yönlendirme
+        this.$router.push("/login");
+      } catch (error) {
+        // Backend'den gelen hata mesajını kontrol et
+        this.errorMessage =
+          error.response?.data?.username?.[0] ||
+          error.response?.data?.email?.[0] ||
+          "Kayıt işlemi başarısız.";
+      }
     },
   },
 };
 </script>
 
 <style scoped>
-/* Stil ayarları isteğe bağlı */
+body {
+  background-color: #f3f4f6;
+  color: #1f2937;
+}
+
+.min-h-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.bg-gray-800 {
+  background-color: #2d3748;
+}
 </style>
