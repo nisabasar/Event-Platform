@@ -1,6 +1,7 @@
 from rest_framework import viewsets, permissions
 from .models import User, Event, Participant, Message
 from .serializers import UserSerializer, EventSerializer, ParticipantSerializer, MessageSerializer
+<<<<<<< HEAD
 
 from rest_framework.response import Response
 from rest_framework import status
@@ -11,6 +12,23 @@ def update_points(user, action):
     elif action == "create":
         user.points += 15
     user.save()
+=======
+from datetime import timedelta
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.viewsets import ModelViewSet
+from .models import User
+from .serializers import UserSerializer
+from rest_framework.permissions import AllowAny, IsAuthenticated
+
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+    def get_permissions(self):
+        if self.action == 'create':  # Kayıt işlemi
+            return [AllowAny()]
+        return [IsAuthenticated()]  # Diğer işlemler için yetkilendirme
+>>>>>>> 30d1ff7c2df82ee6731d64731eca4ca5286d5f72
 
 class EventViewSet(viewsets.ModelViewSet):
     queryset = Event.objects.all()
