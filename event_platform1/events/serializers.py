@@ -2,9 +2,14 @@ from rest_framework import serializers
 from .models import User, Event, Participant, Message
 
 class UserSerializer(serializers.ModelSerializer):
+    gender = serializers.ChoiceField(choices=["male", "female", "other"])
+    interests = serializers.ListField(
+        child=serializers.CharField(max_length=100), required=False
+    )
+
     class Meta:
         model = User
-        fields = '__all__'
+        fields = ["username", "email", "phone", "password", "gender", "interests"]
 
 class EventSerializer(serializers.ModelSerializer):
     created_by = UserSerializer(read_only=True)

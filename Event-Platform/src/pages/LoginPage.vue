@@ -60,6 +60,7 @@ export default {
         localStorage.setItem("authToken", access);
         localStorage.setItem("refreshToken", refresh);
 
+        // Kullanıcıyı ana sayfaya yönlendir
         this.$router.push("/home");
       } catch (error) {
         this.errorMessage = "Giriş başarısız. Lütfen bilgilerinizi kontrol edin.";
@@ -68,6 +69,7 @@ export default {
   },
 };
 </script>
+
 
 <style scoped>
 /* Arka plan rengini kaldırdık */

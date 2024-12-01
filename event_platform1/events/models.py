@@ -1,28 +1,15 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
+# Kullanıcı Modeli
 class User(AbstractUser):
     email = models.EmailField(unique=True)
     phone = models.CharField(max_length=15, null=True, blank=True)
     location = models.CharField(max_length=255, null=True, blank=True)
     birth_date = models.DateField(null=True, blank=True)
-    gender = models.CharField(
-        max_length=10,
-        choices=[('male', 'Erkek'), ('female', 'Kadın'), ('other', 'Diğer')]
-    )
-    interests = models.TextField(null=True, blank=True)  # JSON formatında tutulabilir
-
-    groups = models.ManyToManyField(
-        'auth.Group',
-        related_name='custom_user_groups',  # related_name değiştirildi
-        blank=True
-    )
-    user_permissions = models.ManyToManyField(
-        'auth.Permission',
-        related_name='custom_user_permissions',  # related_name değiştirildi
-        blank=True
-    )
-    
+    gender = models.CharField(max_length=10, choices=[('male', 'Erkek'), ('female', 'Kadın'), ('other', 'Diğer')])
+    interests = models.TextField(null=True, blank=True)  # JSON olarak tutulabilir
+    points = models.IntegerField(default=0) 
 # Etkinlik Modeli
 class Event(models.Model):
     name = models.CharField(max_length=255)

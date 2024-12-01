@@ -1,57 +1,75 @@
-from urllib import response
-from rest_framework import status
 from rest_framework import viewsets, permissions
 from .models import User, Event, Participant, Message
 from .serializers import UserSerializer, EventSerializer, ParticipantSerializer, MessageSerializer
-from datetime import timedelta
 
+from rest_framework.response import Response
+from rest_framework import status
 
-class UserViewSet(viewsets.ModelViewSet):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = [permissions.IsAuthenticated]
+def update_points(user, action):
+    if action == "join":
+        user.points += 10
+    elif action == "create":
+        user.points += 15
+    user.save()
 
 class EventViewSet(viewsets.ModelViewSet):
     queryset = Event.objects.all()
     serializer_class = EventSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     def create(self, request, *args, **kwargs):
-        # Yeni etkinlik bilgilerini al
-        event_data = request.data
+        # Yeni etkinlik verilerini al
+        data = request.data
         user = request.user
-        new_event_start = f"{event_data['date']}T{event_data['time']}"
-        new_event_duration = timedelta(hours=float(event_data['duration']))
-        new_event_end = new_event_start + new_event_duration
 
-        # Kullanıcının mevcut etkinliklerini al
-        user_events = Event.objects.filter(created_by=user)
+        # Yeni etkinlik objesini oluştur
+        new_event = Event(
+            name=data['name'],
+            description=data['description'],
+            date=data['date'],
+            time=data['time'],
+            duration=data['duration'],
+            location=data['location'],
+            category=data['category'],
+            created_by=user
+        )
 
-        for event in user_events:
-            existing_event_start = f"{event.date}T{event.time}"
-            existing_event_duration = timedelta(hours=float(event.duration))
-            existing_event_end = existing_event_start + existing_event_duration
+        # Zaman çakışması kontrolü
+        if check_time_conflict(user, new_event):
+            return Response(
+                {"detail": "Bu etkinlik, zaman açısından başka bir etkinlikle çakışıyor."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-            # Zaman çakışması kontrolü
-            if new_event_start < existing_event_end and new_event_end > existing_event_start:
-                return response({'error': 'Zaman çakışması: Bu etkinlik başka bir etkinliğinizle çakışıyor.'}, status=status.HTTP_400_BAD_REQUEST)
+        # Çakışma yoksa etkinliği kaydet
+        new_event.save()
+        serializer = self.get_serializer(new_event)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        return super().create(request, *args, **kwargs)
+
 
 class ParticipantViewSet(viewsets.ModelViewSet):
     queryset = Participant.objects.all()
     serializer_class = ParticipantSerializer
-    permission_classes = [permissions.IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
         user = request.user
         event_id = request.data.get('event')
-        
-        # Etkinlik kontrolü
-        if Participant.objects.filter(user=user, event_id=event_id).exists():
-            return response({'error': 'Bu etkinliğe zaten katıldınız.'}, status=status.HTTP_400_BAD_REQUEST)
+        event = Event.objects.get(id=event_id)
 
-        return super().create(request, *args, **kwargs)
+        # Zaman çakışması kontrolü
+        if check_time_conflict(user, event):
+            return Response(
+                {"detail": "Bu etkinliğe katılamazsınız, zaman açısından başka bir etkinlikle çakışıyor."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Çakışma yoksa katılımı kaydet
+        participant = Participant(user=user, event=event)
+        participant.save()
+        serializer = self.get_serializer(participant)
+        update_points(request.user, "join")
+        update_points(request.user, "create")
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class MessageViewSet(viewsets.ModelViewSet):
@@ -59,8 +77,44 @@ class MessageViewSet(viewsets.ModelViewSet):
     serializer_class = MessageSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-    def get_queryset(self):
-        event_id = self.request.query_params.get('event')
-        if event_id:
-            return self.queryset.filter(event_id=event_id)
-        return self.queryset
+def check_time_conflict(user, new_event):
+    # Kullanıcının katıldığı etkinlikleri al
+    user_events = Participant.objects.filter(user=user).select_related('event')
+    for participant in user_events:
+        existing_event = participant.event
+        # Tarihler aynı ve zaman çakışıyor mu?
+        if new_event.date == existing_event.date and (
+            new_event.time < (existing_event.time + existing_event.duration) and
+            (new_event.time + new_event.duration) > existing_event.time
+        ):
+            return True
+    return False
+from rest_framework import viewsets
+from .models import User, Event, Participant, Message
+from .serializers import UserSerializer, EventSerializer, ParticipantSerializer, MessageSerializer
+
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from .models import User
+from .serializers import UserSerializer
+
+from rest_framework.permissions import AllowAny
+
+import logging
+
+logger = logging.getLogger(__name__)
+
+class RegisterView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        logger.info(f"Received data: {request.data}")
+        serializer = UserSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
